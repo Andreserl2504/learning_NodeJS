@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import { createClient } from '@libsql/client'
 import { Server } from 'socket.io'
 import { createServer } from 'node:http'
+import cors from 'cors'
 import { argv } from 'node:process'
 
 dotenv.config()
@@ -48,7 +49,7 @@ io.on('connection', async (socket) => {
         sql: 'SELECT id, content FROM messages WHERE id > ?',
         args: [socket.handshake.auth.serverOffset ?? 0]
       })
-      results.rows.forEach(row => {
+      results.rows.forEach((row) => {
         socket.emit('chat message', row.content, row.id.toString())
       })
     } catch (e) {
@@ -56,6 +57,7 @@ io.on('connection', async (socket) => {
     }
   }
 })
+app.use(cors())
 app.use(logger('dev'))
 app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/client/index.html')
